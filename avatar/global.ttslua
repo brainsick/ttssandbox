@@ -1,0 +1,166 @@
+function onLoad()
+	clearTable()
+	spawnObstacles()
+	trackCurrentPlayers()
+end
+
+function clearTable()
+	for key, value in pairs(getAllObjects()) do
+    value.destruct()
+  end
+end
+
+function spawnObstacles()
+	local block = spawnObject({
+		type = 'BlockRectangle',
+		position = { x = 0, y = 1, z = 10.5 },
+		rotation = { x = 0, y = 90, z = 0 }
+	})
+	block.setLock(true)
+
+	block = spawnObject({
+		type = 'BlockRectangle',
+		position = { x = -1.5, y = 1, z = 10 },
+		rotation = { x = 0, y = 0, z = 0 }
+	})
+	block.setLock(true)
+
+	block = spawnObject({
+		type = 'BlockRectangle',
+		position = { x = 1.5, y = 1, z = 10 },
+		rotation = { x = 0, y = 0, z = 0 }
+	})
+	block.setLock(true)
+end
+
+function trackCurrentPlayers()
+	for index, player in ipairs(Player.getPlayers()) do
+		if player.color ~= 'Grey' then
+    	trackPlayer(player)
+		end
+  end
+end
+
+function onPlayerChangedColor(player_color)
+	if player_color == 'Grey' then return end
+
+  local player = Player[player_color]
+  trackPlayer(player)
+end
+
+local knownPlayers = {}
+function trackPlayer(player)
+  local player_color = player.color
+  local steam_id = player.steam_id
+
+  local playerData = knownPlayers[steam_id]
+  if playerData == nil then
+		playerData = initNewPlayer(player)
+    knownPlayers[steam_id] = playerData
+  end
+
+  local avatarObject = playerData.avatarObject
+  avatarObject.setColorTint(stringColorToRGB(player_color))
+end
+
+function initNewPlayer(player)
+	printToColor('Use the keypad to interact with your avatar.', player.color, stringColorToRGB('White'))
+
+	local targetPosition = { x = 0, y = 1, z = 0 }
+	local targetRotation = { x = 0, y = 0, z = 0 }
+	local object = spawnObject({
+		type = 'Figurine_Kimi_Kat',
+		position = targetPosition,
+		rotation = targetRotation
+	})
+
+	playerLookAt(player, targetPosition, targetRotation.y)
+
+	return {
+		avatarObject = object
+	}
+end
+
+function playerLookAt(player, position, yaw)
+  return player.lookAt({
+    position = position,
+    pitch = 22.5,
+    yaw = yaw,
+    distance = 2
+  })
+end
+
+function onScriptingButtonDown(index, player_color)
+  if player_color == 'Grey' then return end
+	local player = Player[player_color]
+	processPlayerInput(player, index)
+end
+
+function processPlayerInput(player, keyPressed)
+	local forthKey, rightKey, backKey, leftKey = 8, 6, 2, 4
+  local turnRightKey, turnLeftKey = 9, 7
+
+  local playerData = knownPlayers[player.steam_id]
+  local avatarObject = playerData.avatarObject
+
+	local targetPosition = avatarObject.getPosition()
+	local targetRotation = avatarObject.getRotation()
+
+  if keyPressed == forthKey then
+    targetPosition = calcMoveForward(avatarObject, 1)
+  elseif keyPressed == rightKey then
+    targetPosition = calcMoveRight(avatarObject, 1)
+  elseif keyPressed == backKey then
+    targetPosition = calcMoveBackward(avatarObject, 1)
+  elseif keyPressed == leftKey then
+    targetPosition = calcMoveLeft(avatarObject, 1)
+  elseif keyPressed == turnRightKey then
+    targetRotation = calcRotateRight(avatarObject, 45)
+  elseif keyPressed == turnLeftKey then
+    targetRotation = calcRotateLeft(avatarObject, 45)
+  end
+
+	avatarObject.setPositionSmooth(targetPosition)
+	avatarObject.setRotationSmooth(targetRotation)
+	playerLookAt(player, targetPosition, targetRotation.y)
+end
+
+function calcMoveForward(object, distance)
+  local position = object.getPosition()
+  local transForward = object.getTransformForward()
+
+  return {
+    x = position.x + (transForward.x * distance),
+    y = position.y + (transForward.y * distance),
+    z = position.z + (transForward.z * distance)
+  }
+end
+
+function calcMoveRight(object, distance)
+  local position = object.getPosition()
+  local transRight = object.getTransformRight()
+
+  return {
+    x = position.x + (transRight.x * distance),
+    y = position.y + (transRight.y * distance),
+    z = position.z + (transRight.z * distance)
+  }
+end
+
+function calcMoveBackward(object, distance)
+  return calcMoveForward(object, distance * -1)
+end
+
+function calcMoveLeft(object, distance)
+  return calcMoveRight(object, distance * -1)
+end
+
+function calcRotateRight(object, degrees)
+  local rotation = object.getRotation()
+	local targetRotationY = (rotation.y + degrees) % 360
+  return { x = rotation.x, y = targetRotationY, z = rotation.z }
+end
+
+function calcRotateLeft(object, degrees)
+  return calcRotateRight(object, degrees * -1)
+end
