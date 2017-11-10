@@ -178,7 +178,6 @@ function isPathObstructed(object, direction, distance)
 		size = size,
 		orientation = orientation,
 		max_distance = distance
-		,debug = true
 	})
 
 	local foundHit = false
