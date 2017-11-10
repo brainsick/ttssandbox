@@ -43,7 +43,6 @@ end
 
 function onPlayerChangedColor(player_color)
 	if player_color == 'Grey' then return end
-
 	local player = Player[player_color]
 	trackPlayer(player)
 end
@@ -103,64 +102,93 @@ function processPlayerInput(player, keyPressed)
 	local playerData = knownPlayers[player.steam_id]
 	local avatarObject = playerData.avatarObject
 
+	local distance = 1
+	local degrees = 45
+
+	local directionTransform = nil
+	local rotationTransform = nil
+
+	if keyPressed == forthKey then
+		local ft = avatarObject.getTransformForward()
+		directionTransform = { x = ft.x, y = ft.y, z = ft.z }
+	elseif keyPressed == rightKey then
+		local rt = avatarObject.getTransformRight()
+		directionTransform = { x = rt.x, y = rt.y, z = rt.z }
+	elseif keyPressed == backKey then
+		local ft = avatarObject.getTransformForward()
+		directionTransform = { x = ft.x * -1, y = ft.y * -1, z = ft.z * -1 }
+	elseif keyPressed == leftKey then
+		local rt = avatarObject.getTransformRight()
+		directionTransform = { x = rt.x * -1, y = rt.y * -1, z = rt.z * -1 }
+	elseif keyPressed == turnRightKey then
+		rotationTransform = { x = 0, y = 1, z = 0 }
+	elseif keyPressed == turnLeftKey then
+		rotationTransform = { x = 0, y = -1, z = 0 }
+	end
+
 	local targetPosition = avatarObject.getPosition()
 	local targetRotation = avatarObject.getRotation()
 
-	if keyPressed == forthKey then
-		targetPosition = calcMoveForward(avatarObject, 1)
-	elseif keyPressed == rightKey then
-		targetPosition = calcMoveRight(avatarObject, 1)
-	elseif keyPressed == backKey then
-		targetPosition = calcMoveBackward(avatarObject, 1)
-	elseif keyPressed == leftKey then
-		targetPosition = calcMoveLeft(avatarObject, 1)
-	elseif keyPressed == turnRightKey then
-		targetRotation = calcRotateRight(avatarObject, 45)
-	elseif keyPressed == turnLeftKey then
-		targetRotation = calcRotateLeft(avatarObject, 45)
+	if rotationTransform ~= nil then
+		targetRotation = {
+			x = (targetRotation.x + rotationTransform.x * degrees) % 360,
+			y = (targetRotation.y + rotationTransform.y * degrees) % 360,
+			z = (targetRotation.z + rotationTransform.z * degrees) % 360
+		}
+	end
+
+	if directionTransform ~= nil then
+		if not isPathObstructed(avatarObject, directionTransform, distance) then
+			targetPosition = {
+				x = targetPosition.x + directionTransform.x * distance,
+				y = targetPosition.y + directionTransform.y * distance,
+				z = targetPosition.z + directionTransform.z * distance
+			}
+		end
 	end
 
 	avatarObject.setPositionSmooth(targetPosition)
 	avatarObject.setRotationSmooth(targetRotation)
+
 	playerLookAt(player, targetPosition, targetRotation.y)
 end
 
-function calcMoveForward(object, distance)
-	local position = object.getPosition()
-	local transForward = object.getTransformForward()
+-- cast a box the size of our object in the direction we want to go to find any obstacles
+function isPathObstructed(object, direction, distance)
+	-- goal: cast the box from our subject object's center
+	-- this /almost/ works; small positioning errors when object is askew
+	local origin = object.getBounds().center
 
-	return {
-		x = position.x + (transForward.x * distance),
-		y = position.y + (transForward.y * distance),
-		z = position.z + (transForward.z * distance)
+	-- bounding boxes change size based on an object's rotation; use the unrotated dimensions
+	-- shrink this 10% just to provide a little margin and avoid hitting the table all the time
+	local bounds = object.getBoundsNormalized()
+	local sizeScale = 0.9
+	local size = {
+		x = bounds.size.x * sizeScale,
+		y = bounds.size.y * sizeScale,
+		z = bounds.size.z * sizeScale
 	}
-end
 
-function calcMoveRight(object, distance)
-	local position = object.getPosition()
-	local transRight = object.getTransformRight()
+	local orientation = object.getRotation()
 
-	return {
-		x = position.x + (transRight.x * distance),
-		y = position.y + (transRight.y * distance),
-		z = position.z + (transRight.z * distance)
-	}
-end
+	local result = Physics.cast({
+		origin = origin,
+		direction = direction,
+		type = 3,
+		size = size,
+		orientation = orientation,
+		max_distance = distance
+		,debug = true
+	})
 
-function calcMoveBackward(object, distance)
-	return calcMoveForward(object, distance * -1)
-end
+	local foundHit = false
+	for index, hit in ipairs(result) do
+		-- filter out the subject object
+		-- if we didn't shrink our size by 10% we would also need to deal with the table here
+		if object ~= hit.hit_object then
+			foundHit = true
+		end
+	end
 
-function calcMoveLeft(object, distance)
-	return calcMoveRight(object, distance * -1)
-end
-
-function calcRotateRight(object, degrees)
-	local rotation = object.getRotation()
-	local targetRotationY = (rotation.y + degrees) % 360
-	return { x = rotation.x, y = targetRotationY, z = rotation.z }
-end
-
-function calcRotateLeft(object, degrees)
-	return calcRotateRight(object, degrees * -1)
+	return foundHit
 end
