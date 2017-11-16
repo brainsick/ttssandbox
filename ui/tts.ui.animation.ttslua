@@ -1,0 +1,66 @@
+function onLoad()
+  self.setScale({ 10, 0.1, 10 })
+  self.setColorTint({ 0, 0, 0, 1 })
+  createPixels()
+
+  Timer.create({
+    identifier = tostring({}),
+    function_name = 'draw',
+    function_owner = self,
+    delay = 0.2,
+    repetitions = 0
+  })
+end
+
+local gridX = 16
+local gridZ = 16
+function createPixels()
+  local pixelCount = gridX * gridZ
+  for x = 1, gridX do
+    for z = 1, gridZ do
+      local offsetX = 1 / gridX
+      local offsetZ = 1 / gridZ
+
+      local pos = { offsetX * x - 0.5, 0.5, offsetZ * z - 0.5 }
+
+      local pixel = self.createButton({
+        click_function = 'empty',
+        -- http://www.alanwood.net/unicode/geometric_shapes.html
+        label = string.char(0x25A0),
+        position = pos,
+        scale = { 1, 1, 1 },
+        width = 0,
+        height = 0,
+        font_size = 70,
+        font_color = { 1, 1, 1, 1 }
+      })
+    end
+  end
+end
+
+local colors = {}
+local colorRange = 32
+for index = 0, colorRange do
+  local color = { index / colorRange, 0, 0, 1 }
+  table.insert(colors, color)
+end
+for index = 0, colorRange do
+  local color = { 0, index / colorRange, 0, 1 }
+  table.insert(colors, color)
+end
+for index = 0, colorRange do
+  local color = { 0, 0, index / colorRange, 1 }
+  table.insert(colors, color)
+end
+local colorCount = #colors
+
+local colorIndex = 1
+function draw()
+  for index = 1, gridX * gridZ do
+    self.editButton({
+      index = index - 1,
+      font_color = colors[(colorIndex + index) % colorCount]
+    })
+  end
+  colorIndex = colorIndex + 1 % colorCount
+end
