@@ -28,7 +28,7 @@ function createPixels()
 
       local pixel = self.createButton({
         click_function = 'empty',
-        -- http://www.alanwood.net/unicode/geometric_shapes.html
+        -- https://en.wikipedia.org/wiki/Geometric_Shapes
         label = string.char(0x25A0),
         position = pos,
         scale = { 1, 1, 1 },
@@ -43,17 +43,23 @@ end
 
 local colors = {}
 local colorRange = 28
-for index = 0, colorRange do
-  local color = { index / colorRange, 0, 0, 1 }
-  table.insert(colors, color)
+for index = 0, colorRange do -- red
+  table.insert(colors, { index / colorRange, 0, 0, 1 })
 end
-for index = 0, colorRange do
-  local color = { 0, index / colorRange, 0, 1 }
-  table.insert(colors, color)
+for index = 0, colorRange do -- green
+  table.insert(colors, { 0, index / colorRange, 0, 1 })
 end
-for index = 0, colorRange do
-  local color = { 0, 0, index / colorRange, 1 }
-  table.insert(colors, color)
+for index = 0, colorRange do -- blue
+  table.insert(colors, { 0, 0, index / colorRange, 1 })
+end
+for index = 0, colorRange do -- yellow
+  table.insert(colors, { index / colorRange, 1, 0, 1 })
+end
+for index = 0, colorRange do -- light blue
+  table.insert(colors, { 0, index / colorRange, 1, 1 })
+end
+for index = 0, colorRange do -- pink
+  table.insert(colors, { 1, 0, index / colorRange, 1 })
 end
 local colorCount = #colors
 
