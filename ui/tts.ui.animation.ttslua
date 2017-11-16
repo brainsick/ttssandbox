@@ -1,5 +1,5 @@
 function onLoad()
-  self.setScale({ 10, 0.1, 10 })
+  self.setScale({ 20, 0.1, 20 })
   self.setColorTint({ 0, 0, 0, 1 })
   createPixels()
 
@@ -21,7 +21,7 @@ function createPixels()
       local offsetX = 1 / gridX
       local offsetZ = 1 / gridZ
 
-      local pos = { offsetX * x - 0.5, 0.5, offsetZ * z - 0.5 }
+      local pos = { (offsetX * x - 0.5) - offsetX / 2, 0.5, (offsetZ * z - 0.5) - offsetZ / 2 }
 
       local pixel = self.createButton({
         click_function = 'empty',
@@ -39,7 +39,7 @@ function createPixels()
 end
 
 local colors = {}
-local colorRange = 32
+local colorRange = 28
 for index = 0, colorRange do
   local color = { index / colorRange, 0, 0, 1 }
   table.insert(colors, color)
