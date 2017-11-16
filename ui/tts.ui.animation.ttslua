@@ -18,10 +18,13 @@ function createPixels()
   local pixelCount = gridX * gridZ
   for x = 1, gridX do
     for z = 1, gridZ do
-      local offsetX = 1 / gridX
-      local offsetZ = 1 / gridZ
+      local cellSizeX = 1 / gridX
+      local cellSizeZ = 1 / gridZ
 
-      local pos = { (offsetX * x - 0.5) - offsetX / 2, 0.5, (offsetZ * z - 0.5) - offsetZ / 2 }
+      local offsetX = 0.5 + cellSizeX / 2
+      local offsetZ = 0.5 + cellSizeZ / 2
+
+      local pos = { cellSizeX * x - offsetX, 0.5, cellSizeZ * z - offsetZ }
 
       local pixel = self.createButton({
         click_function = 'empty',
