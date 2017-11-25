@@ -1,5 +1,6 @@
 function onLoad()
-  self.setRotation({ math.random(360), math.random(360), math.random(360) })
+  self.setPosition({ math.random(-25, 25), 1.5, math.random(-15, 15) })
+  self.setRotation({ math.random(360) - 1, math.random(360) - 1, math.random(360) - 1 })
 
   Timer.create({
     identifier = tostring({}),
@@ -12,7 +13,7 @@ end
 function rotateObject()
   local rotation = self.getRotation()
 
-  rotation.y = rotation.y + 10
+  rotation.y = (rotation.y + 10) % 360
 
   self.setRotation(rotation)
 end
