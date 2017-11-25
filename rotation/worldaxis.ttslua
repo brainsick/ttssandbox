@@ -1,0 +1,18 @@
+function onLoad()
+  self.setRotation({ math.random(360), math.random(360), math.random(360) })
+
+  Timer.create({
+    identifier = tostring({}),
+    function_name = 'rotateObject',
+    delay = 1,
+    repetitions = 0
+  })
+end
+
+function rotateObject()
+  local rotation = self.getRotation()
+
+  rotation.y = rotation.y + 10
+
+  self.setRotation(rotation)
+end
