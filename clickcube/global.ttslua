@@ -1,17 +1,14 @@
 function onLoad()
---  for x = -8, 8 do
---    for y = 1, 8 do
---      for z = -8, 8 do
     for x = -4, 4 do
-      for y = 1, 4 do
+      for y = 0, 8 do
         for z = -4, 4 do
-          --print(tostring(x) .. tostring(y) .. tostring(z))
           local block = spawnObject({
             type = 'BlockSquare',
-            position = { x, y, z },
+            position = { x, 1.5 + y, z },
             callback = 'spawnCallback'
           })
           block.setLock(true)
+          block.setVar('health', 10)
         end
       end
     end
@@ -28,8 +25,8 @@ function spawnCallback(block)
     width = 500,
     height = 500,
     font_size = 400,
-    color = { 0, 1, 0, 1 },
-    font_color = { 0, 0, 0, 1 }
+    color = { 0, 1, 0, 0 },
+    font_color = { 0, 0, 0, 0 }
   })
   block.createButton({
     click_function = 'buttonClick',
@@ -41,8 +38,8 @@ function spawnCallback(block)
     width = 500,
     height = 500,
     font_size = 400,
-    color = { 0, 1, 0, 1 },
-    font_color = { 0, 0, 0, 1 }
+    color = { 0, 1, 0, 0 },
+    font_color = { 0, 0, 0, 0 }
   })
 
   block.createButton({
@@ -55,8 +52,8 @@ function spawnCallback(block)
     width = 500,
     height = 500,
     font_size = 400,
-    color = { 0, 1, 0, 1 },
-    font_color = { 0, 0, 0, 1 }
+    color = { 0, 1, 0, 0 },
+    font_color = { 0, 0, 0, 0 }
   })
   block.createButton({
     click_function = 'buttonClick',
@@ -68,8 +65,8 @@ function spawnCallback(block)
     width = 500,
     height = 500,
     font_size = 400,
-    color = { 0, 1, 0, 1 },
-    font_color = { 0, 0, 0, 1 }
+    color = { 0, 1, 0, 0 },
+    font_color = { 0, 0, 0, 0 }
   })
 
   block.createButton({
@@ -82,8 +79,8 @@ function spawnCallback(block)
     width = 500,
     height = 500,
     font_size = 400,
-    color = { 0, 1, 0, 1 },
-    font_color = { 0, 0, 0, 1 }
+    color = { 0, 1, 0, 0 },
+    font_color = { 0, 0, 0, 0 }
   })
   block.createButton({
     click_function = 'buttonClick',
@@ -95,11 +92,37 @@ function spawnCallback(block)
     width = 500,
     height = 500,
     font_size = 400,
-    color = { 0, 1, 0, 1 },
-    font_color = { 0, 0, 0, 1 }
+    color = { 0, 1, 0, 0 },
+    font_color = { 0, 0, 0, 0 }
   })
 end
 
 function buttonClick(block)
-  block.destruct()
+  block.setVar('clickCount', (block.getVar('clickCount') or 0) + 1)
+  if block.getVar('clickCount') == block.getVar('health') then
+    killBlock(block)
+  end
+end
+
+function wait(delay)
+  local start = os.time()
+  while os.time() - start < delay do coroutine.yield(0) end
+end
+
+function killBlock(block)
+  function killBlockCoroutine()
+    local scale = block.getScale()
+    block.setColorTint({ 1, 1, 0, 1 })
+    block.setScale({ scale.x * 0.9, scale.y * 0.9, scale.z * 0.9 })
+    wait(0.2)
+    block.setColorTint({ 0, 1, 1, 1 })
+    block.setScale({ scale.x * 0.8, scale.y * 0.8, scale.z * 0.8 })
+    wait(0.2)
+    block.setColorTint({ 1, 0, 1, 1 })
+    block.setScale({ scale.x * 0.7, scale.y * 0.7, scale.z * 0.7 })
+    wait(0.2)
+    block.destruct()
+    return 1
+  end
+  startLuaCoroutine(Global, 'killBlockCoroutine')
 end
