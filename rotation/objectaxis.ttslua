@@ -1,0 +1,31 @@
+function onLoad()
+  self.setPosition({ math.random(-25, 25), 1.5, math.random(-15, 15) })
+  self.setRotation({ math.random(360) - 1, math.random(360) - 1, math.random(360) - 1 })
+
+  Timer.create({
+    identifier = tostring({}),
+    function_name = 'rotateY',
+    delay = 1,
+    repetitions = 0
+  })
+end
+
+function rotateObject()
+  local rotation = self.getRotation()
+
+  rotation.y = (rotation.y + 10) % 360
+
+  self.setRotation(rotation)
+end
+
+function rotateY()
+  local rotation = self.getRotation()
+
+  local degrees = 10
+
+  local targetX = math.cos(rotation.x) * degrees + math.sin(rotation.z) * degrees
+  local targetY = rotation.y
+  local targetZ = math.sin(rotation.x * -1) * degrees + math.cos(rotation.z) * degrees
+
+  self.setRotation({ targetX, targetY, targetZ })
+end
