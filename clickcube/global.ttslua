@@ -1,0 +1,105 @@
+function onLoad()
+--  for x = -8, 8 do
+--    for y = 1, 8 do
+--      for z = -8, 8 do
+    for x = -4, 4 do
+      for y = 1, 4 do
+        for z = -4, 4 do
+          --print(tostring(x) .. tostring(y) .. tostring(z))
+          local block = spawnObject({
+            type = 'BlockSquare',
+            position = { x, y, z },
+            callback = 'spawnCallback'
+          })
+          block.setLock(true)
+        end
+      end
+    end
+end
+
+function spawnCallback(block)
+  block.createButton({
+    click_function = 'buttonClick',
+    function_owner = Global,
+    label = 'A',
+    position = { 0, 0.5, 0 },
+    rotation = { 0, 0, 0 },
+    scale = { 1, 1, 1 },
+    width = 500,
+    height = 500,
+    font_size = 400,
+    color = { 0, 1, 0, 1 },
+    font_color = { 0, 0, 0, 1 }
+  })
+  block.createButton({
+    click_function = 'buttonClick',
+    function_owner = Global,
+    label = 'B',
+    position = { 0, -0.5, 0 },
+    rotation = { 180, 0, 0 },
+    scale = { 1, 1, 1 },
+    width = 500,
+    height = 500,
+    font_size = 400,
+    color = { 0, 1, 0, 1 },
+    font_color = { 0, 0, 0, 1 }
+  })
+
+  block.createButton({
+    click_function = 'buttonClick',
+    function_owner = Global,
+    label = 'C',
+    position = { 0.5, 0, 0 },
+    rotation = { 0, 0, 90 },
+    scale = { 1, 1, 1 },
+    width = 500,
+    height = 500,
+    font_size = 400,
+    color = { 0, 1, 0, 1 },
+    font_color = { 0, 0, 0, 1 }
+  })
+  block.createButton({
+    click_function = 'buttonClick',
+    function_owner = Global,
+    label = 'D',
+    position = { -0.5, 0 , 0 },
+    rotation = { 0, 0, -90 },
+    scale = { 1, 1, 1 },
+    width = 500,
+    height = 500,
+    font_size = 400,
+    color = { 0, 1, 0, 1 },
+    font_color = { 0, 0, 0, 1 }
+  })
+
+  block.createButton({
+    click_function = 'buttonClick',
+    function_owner = Global,
+    label = 'E',
+    position = { 0, 0, 0.5 },
+    rotation = { -90, 0, 0 },
+    scale = { 1, 1, 1 },
+    width = 500,
+    height = 500,
+    font_size = 400,
+    color = { 0, 1, 0, 1 },
+    font_color = { 0, 0, 0, 1 }
+  })
+  block.createButton({
+    click_function = 'buttonClick',
+    function_owner = Global,
+    label = 'F',
+    position = { 0, 0, -0.5 },
+    rotation = { 90, 0, 0 },
+    scale = { 1, 1, 1 },
+    width = 500,
+    height = 500,
+    font_size = 400,
+    color = { 0, 1, 0, 1 },
+    font_color = { 0, 0, 0, 1 }
+  })
+end
+
+function buttonClick(block)
+  block.destruct()
+end
