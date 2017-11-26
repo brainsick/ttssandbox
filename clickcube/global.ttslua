@@ -98,15 +98,33 @@ function spawnCallback(block)
 end
 
 function buttonClick(block)
-  block.setVar('clickCount', (block.getVar('clickCount') or 0) + 1)
-  if block.getVar('clickCount') == block.getVar('health') then
+  local clickCount = (block.getVar('clickCount') or 0) + 1
+  local blockHealth = block.getVar('health')
+  
+  if clickCount < blockHealth then
+    flashBlock(block)
+  elseif clickCount == blockHealth then
     killBlock(block)
   end
+  
+  block.setVar('clickCount', clickCount)
 end
 
 function wait(delay)
   local start = os.time()
   while os.time() - start < delay do coroutine.yield(0) end
+end
+
+function flashBlock(block)
+  function flashBlockCoroutine()
+    block.setColorTint({ 0, 0, 0, 1 })
+    wait(0.1)
+    block.setColorTint({ 1, 1, 1, 1 })
+    wait(0.1)
+    block.setColorTint({ 1, 0, 0, 1 })
+    return 1
+  end
+  startLuaCoroutine(Global, 'flashBlockCoroutine')
 end
 
 function killBlock(block)
