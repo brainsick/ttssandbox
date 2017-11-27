@@ -41,11 +41,35 @@ function trackPlayer(player)
   displayScores()
 end
 
+local experiencePerLevel = 20
+local playerLevelProperties = {
+  { damage = 1 },
+  { damage = 2 },
+  { damage = 3 },
+  { damage = 4 },
+  { damage = 5 },
+  { damage = 6 },
+  { damage = 7 },
+  { damage = 8 },
+  { damage = 9 },
+  { damage = 10 },
+  { damage = 11 },
+  { damage = 12 },
+  { damage = 13 },
+  { damage = 14 },
+  { damage = 15 },
+  { damage = 16 },
+  { damage = 17 },
+  { damage = 18 },
+  { damage = 19 },
+  { damage = 20 },
+}
+
 function initNewPlayer(player)
   return {
     color = player.color,
     name = player.steam_name,
-    clicks = 0,
+    attacks = 0,
     kills = 0,
     experience = 0
   }
@@ -53,8 +77,7 @@ end
 
 function spawnClickcube()
   local spawnClickcubeBlockParams = {
-    position = { x = 0, y = 0, z = 0 },
-    tint = { r = 0, g = 0, b = 0, a = 0 }
+    position = { x = 0, y = 0, z = 0 }
   }
   for x = -4, 4 do
     for y = 0, 8 do
@@ -62,25 +85,27 @@ function spawnClickcube()
         spawnClickcubeBlockParams.position.x = x
         spawnClickcubeBlockParams.position.y = 1.5 + y
         spawnClickcubeBlockParams.position.z = z
-        if x == 0 and y == 4 and z == 0 then
-          spawnClickcubeBlockParams.tint.r = 0
-          spawnClickcubeBlockParams.tint.g = 1
-          spawnClickcubeBlockParams.tint.b = 0
-          spawnClickcubeBlockParams.tint.a = 1
+
+        local blockLevel = 0
+        if x == -4 or x == 4 or y == 0 or y == 8 or z == -4 or z == 4 then
+          blockLevel = 1
+        elseif x == -3 or x == 3 or y == 1 or y == 7 or z == -3 or z == 3 then
+          blockLevel = 2
+        elseif x == -2 or x == 2 or y == 2 or y == 6 or z == -2 or z == 2 then
+          blockLevel = 3
+        elseif x == -1 or x == 1 or y == 3 or y == 5 or z == -1 or z == 1 then
+          blockLevel = 4
         else
-          spawnClickcubeBlockParams.tint.r = 1
-          spawnClickcubeBlockParams.tint.g = 0
-          spawnClickcubeBlockParams.tint.b = 0
-          spawnClickcubeBlockParams.tint.a = 1
+          blockLevel = 5
         end
-        spawnClickcubeBlock(spawnClickcubeBlockParams)
+        spawnClickcubeBlock(spawnClickcubeBlockParams, blockLevel)
       end
     end
   end
 end
 
 local buttonAlpha = debug and 1 or 0
-local buttonParamsA = {
+local blockFaceAButtonParams = {
   click_function = 'onButtonClick',
   function_owner = Global,
   label = 'A',
@@ -94,7 +119,7 @@ local buttonParamsA = {
   font_color = { 0, 0, 0, buttonAlpha }
 }
 
-local buttonParamsB = {
+local blockFaceBButtonParams = {
   click_function = 'onButtonClick',
   function_owner = Global,
   label = 'B',
@@ -108,7 +133,7 @@ local buttonParamsB = {
   font_color = { 0, 0, 0, buttonAlpha }
 }
 
-local buttonParamsC = {
+local blockFaceCButtonParams = {
   click_function = 'onButtonClick',
   function_owner = Global,
   label = 'C',
@@ -122,7 +147,7 @@ local buttonParamsC = {
   font_color = { 0, 0, 0, buttonAlpha }
 }
 
-local buttonParamsD = {
+local blockFaceDButtonParams = {
   click_function = 'onButtonClick',
   function_owner = Global,
   label = 'D',
@@ -136,7 +161,7 @@ local buttonParamsD = {
   font_color = { 0, 0, 0, buttonAlpha }
 }
 
-local buttonParamsE = {
+local blockFaceEButtonParams = {
   click_function = 'onButtonClick',
   function_owner = Global,
   label = 'E',
@@ -150,7 +175,7 @@ local buttonParamsE = {
   font_color = { 0, 0, 0, buttonAlpha }
 }
 
-local buttonParamsF = {
+local blockFaceFButtonParams = {
   click_function = 'onButtonClick',
   function_owner = Global,
   label = 'F',
@@ -168,24 +193,33 @@ local spawnObjectParams = {
   type = 'BlockSquare'
 }
 
-function spawnClickcubeBlock(params)
+local blockLevelProperties = {
+  { health = 10, color = { 0.961, 0.961, 0.961, 1 } },
+  { health = 20, color = { 0.933, 0.933, 0.933, 1 } },
+  { health = 40, color = { 0.878, 0.878, 0.878, 1 } },
+  { health = 80, color = { 0.741, 0.741, 0.741, 1 } },
+  { health = 160, color = { 0.620, 0.620, 0.620, 1 } }
+}
+
+function spawnClickcubeBlock(params, blockLevel)
   spawnObjectParams.position = params.position
 
   local block = spawnObject(spawnObjectParams)
-  block.setColorTint(params.tint)
 
   block.setLock(true)
 
-  block.setVar('health', 10)
+  block.setVar('level', blockLevel)
+  block.setVar('health', blockLevelProperties[blockLevel].health)
+  block.setVar('experience', blockLevel)
 
-  block.createButton(buttonParamsA)
-  block.createButton(buttonParamsB)
+  block.setColorTint(blockLevelProperties[blockLevel].color)
 
-  block.createButton(buttonParamsC)
-  block.createButton(buttonParamsD)
-
-  block.createButton(buttonParamsE)
-  block.createButton(buttonParamsF)
+  block.createButton(blockFaceAButtonParams)
+  block.createButton(blockFaceBButtonParams)
+  block.createButton(blockFaceCButtonParams)
+  block.createButton(blockFaceDButtonParams)
+  block.createButton(blockFaceEButtonParams)
+  block.createButton(blockFaceFButtonParams)
 
   return block
 end
@@ -198,8 +232,11 @@ end
 function displayScores()
   local notes = ''
   for steam_id, playerData in pairs(knownPlayers) do
+    local playerLevel = calcPlayerLevel(playerData.experience)
     local playerNotes = '[' .. colorNameToHex(playerData.color) .. ']'
-      .. playerData.name .. ': click(' .. playerData.clicks .. ') kill(' .. playerData.kills .. ')'
+      .. playerData.name .. ' - Level(' .. playerLevel .. ')\n'
+      .. 'experience(' .. playerData.experience .. ')' .. ' attacks(' .. playerData.attacks .. ') kills(' .. playerData.kills .. ')\n'
+      .. 'damage(' .. playerLevelProperties[playerLevel].damage .. ')'
       .. '[-]\n'
     notes = notes .. playerNotes
   end
@@ -212,23 +249,58 @@ function onButtonClick(block, player_color)
   resolveClick(player, block)
 end
 
+function calcPlayerLevel(experience)
+  local playerLevel = math.floor(experience / experiencePerLevel) + 1
+  return math.min(playerLevel, #playerLevelProperties)
+end
+
 function resolveClick(player, block)
   local playerData = knownPlayers[player.steam_id]
 
-  playerData.clicks = playerData.clicks + 1
-  displayScores()
+  local playerLevel = calcPlayerLevel(playerData.experience)
 
-  local clickCount = (block.getVar('clickCount') or 0) + 1
+  playerData.attacks = playerData.attacks + 1
+
   local blockHealth = block.getVar('health')
 
-  if clickCount < blockHealth then
+  blockHealth = blockHealth - playerLevelProperties[playerLevel].damage
+
+  if blockHealth > 0 then
     pulseBlock(block)
-  elseif clickCount == blockHealth then
-    playerData.kills = playerData.kills + 1
-    killBlock(block)
+  elseif blockHealth <= 0 then
+    if not block.getVar('dying') then
+      block.setVar('dying', true)
+
+      playerData.kills = playerData.kills + 1
+      playerData.experience = playerData.experience + block.getVar('experience')
+
+      local blockLevel = block.getVar('level')
+      if blockLevel == 5 then
+        for key, value in pairs(getAllObjects()) do
+          value.setLock(false)
+        end
+      end
+
+      local blockCount = 0
+      for key, value in pairs(getAllObjects()) do
+        blockCount = blockCount + 1
+      end
+      if blockCount == 1 then
+        Timer.create({
+          identifier = tostring({}),
+          function_name = 'spawnClickcube',
+          delay = 1,
+          repetitions = 1
+        })
+      end
+
+      killBlock(block)
+    end
   end
 
-  block.setVar('clickCount', clickCount)
+  block.setVar('health', blockHealth)
+
+  displayScores()
 end
 
 function wait(delay)
