@@ -1,9 +1,29 @@
+-- Clickcube POC by Todd Ross
+-- http://steamcommunity.com/sharedfiles/filedetails/?id=1214163587
+
 local debug = false
 
 function onLoad()
   clearTable()
   trackCurrentPlayers()
   spawnClickcube()
+
+  Timer.create({
+    identifier = tostring({}),
+    function_name = 'respawnClickcube',
+    delay = 5,
+    repetitions = 0
+  })
+end
+
+function respawnClickcube()
+  local blockCount = 0
+  for key, value in pairs(getAllObjects()) do
+    blockCount = blockCount + 1
+  end
+  if blockCount == 0 then
+    spawnClickcube()
+  end
 end
 
 function clearTable()
@@ -64,6 +84,11 @@ local playerLevelProperties = {
   { damage = 19 },
   { damage = 20 },
 }
+
+function calcPlayerLevel(experience)
+  local playerLevel = math.floor(experience / experiencePerLevel) + 1
+  return math.min(playerLevel, #playerLevelProperties)
+end
 
 function initNewPlayer(player)
   return {
@@ -249,11 +274,6 @@ function onButtonClick(block, player_color)
   resolveClick(player, block)
 end
 
-function calcPlayerLevel(experience)
-  local playerLevel = math.floor(experience / experiencePerLevel) + 1
-  return math.min(playerLevel, #playerLevelProperties)
-end
-
 function resolveClick(player, block)
   local playerData = knownPlayers[player.steam_id]
 
@@ -279,19 +299,6 @@ function resolveClick(player, block)
         for key, value in pairs(getAllObjects()) do
           value.setLock(false)
         end
-      end
-
-      local blockCount = 0
-      for key, value in pairs(getAllObjects()) do
-        blockCount = blockCount + 1
-      end
-      if blockCount == 1 then
-        Timer.create({
-          identifier = tostring({}),
-          function_name = 'spawnClickcube',
-          delay = 1,
-          repetitions = 1
-        })
       end
 
       killBlock(block)
