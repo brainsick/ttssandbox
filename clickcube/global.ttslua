@@ -1,6 +1,60 @@
+local debug = false
+
 function onLoad()
+  clearTable()
+  trackCurrentPlayers()
+  spawnClickcube()
+end
+
+function clearTable()
+  for key, value in pairs(getAllObjects()) do
+    value.destruct()
+  end
+end
+
+function trackCurrentPlayers()
+  for index, player in ipairs(Player.getPlayers()) do
+    if player.color ~= 'Grey' then
+      trackPlayer(player)
+    end
+  end
+end
+
+function onPlayerChangedColor(player_color)
+  if player_color == 'Grey' then return end
+  local player = Player[player_color]
+  trackPlayer(player)
+end
+
+local knownPlayers = {}
+function trackPlayer(player)
+  local steam_id = player.steam_id
+
+  local playerData = knownPlayers[steam_id]
+  if playerData == nil then
+    playerData = initNewPlayer(player)
+    knownPlayers[steam_id] = playerData
+  else
+    playerData.color = player.color
+  end
+
+  displayScores()
+end
+
+function initNewPlayer(player)
+  return {
+    color = player.color,
+    name = player.steam_name,
+    clicks = 0,
+    kills = 0,
+    experience = 0
+  }
+end
+
+function spawnClickcube()
   local spawnClickcubeBlockParams = {
-    position = { x = 0, y = 0, z = 0 }
+    position = { x = 0, y = 0, z = 0 },
+    tint = { r = 0, g = 0, b = 0, a = 0 }
   }
   for x = -4, 4 do
     for y = 0, 8 do
@@ -8,14 +62,26 @@ function onLoad()
         spawnClickcubeBlockParams.position.x = x
         spawnClickcubeBlockParams.position.y = 1.5 + y
         spawnClickcubeBlockParams.position.z = z
+        if x == 0 and y == 4 and z == 0 then
+          spawnClickcubeBlockParams.tint.r = 0
+          spawnClickcubeBlockParams.tint.g = 1
+          spawnClickcubeBlockParams.tint.b = 0
+          spawnClickcubeBlockParams.tint.a = 1
+        else
+          spawnClickcubeBlockParams.tint.r = 1
+          spawnClickcubeBlockParams.tint.g = 0
+          spawnClickcubeBlockParams.tint.b = 0
+          spawnClickcubeBlockParams.tint.a = 1
+        end
         spawnClickcubeBlock(spawnClickcubeBlockParams)
       end
     end
   end
 end
 
+local buttonAlpha = debug and 1 or 0
 local buttonParamsA = {
-  click_function = 'buttonClick',
+  click_function = 'onButtonClick',
   function_owner = Global,
   label = 'A',
   position = { 0, 0.5, 0 },
@@ -24,12 +90,12 @@ local buttonParamsA = {
   width = 500,
   height = 500,
   font_size = 400,
-  color = { 0, 1, 0, 1 },
-  font_color = { 0, 0, 0, 1 }
+  color = { 0, 1, 0, buttonAlpha },
+  font_color = { 0, 0, 0, buttonAlpha }
 }
 
 local buttonParamsB = {
-  click_function = 'buttonClick',
+  click_function = 'onButtonClick',
   function_owner = Global,
   label = 'B',
   position = { 0, -0.5, 0 },
@@ -38,12 +104,12 @@ local buttonParamsB = {
   width = 500,
   height = 500,
   font_size = 400,
-  color = { 0, 1, 0, 1 },
-  font_color = { 0, 0, 0, 1 }
+  color = { 0, 1, 0, buttonAlpha },
+  font_color = { 0, 0, 0, buttonAlpha }
 }
 
 local buttonParamsC = {
-  click_function = 'buttonClick',
+  click_function = 'onButtonClick',
   function_owner = Global,
   label = 'C',
   position = { 0.5, 0, 0 },
@@ -52,12 +118,12 @@ local buttonParamsC = {
   width = 500,
   height = 500,
   font_size = 400,
-  color = { 0, 1, 0, 1 },
-  font_color = { 0, 0, 0, 1 }
+  color = { 0, 1, 0, buttonAlpha },
+  font_color = { 0, 0, 0, buttonAlpha }
 }
 
 local buttonParamsD = {
-  click_function = 'buttonClick',
+  click_function = 'onButtonClick',
   function_owner = Global,
   label = 'D',
   position = { -0.5, 0 , 0 },
@@ -66,12 +132,12 @@ local buttonParamsD = {
   width = 500,
   height = 500,
   font_size = 400,
-  color = { 0, 1, 0, 1 },
-  font_color = { 0, 0, 0, 1 }
+  color = { 0, 1, 0, buttonAlpha },
+  font_color = { 0, 0, 0, buttonAlpha }
 }
 
 local buttonParamsE = {
-  click_function = 'buttonClick',
+  click_function = 'onButtonClick',
   function_owner = Global,
   label = 'E',
   position = { 0, 0, 0.5 },
@@ -80,12 +146,12 @@ local buttonParamsE = {
   width = 500,
   height = 500,
   font_size = 400,
-  color = { 0, 1, 0, 1 },
-  font_color = { 0, 0, 0, 1 }
+  color = { 0, 1, 0, buttonAlpha },
+  font_color = { 0, 0, 0, buttonAlpha }
 }
 
 local buttonParamsF = {
-  click_function = 'buttonClick',
+  click_function = 'onButtonClick',
   function_owner = Global,
   label = 'F',
   position = { 0, 0, -0.5 },
@@ -94,8 +160,8 @@ local buttonParamsF = {
   width = 500,
   height = 500,
   font_size = 400,
-  color = { 0, 1, 0, 1 },
-  font_color = { 0, 0, 0, 1 }
+  color = { 0, 1, 0, buttonAlpha },
+  font_color = { 0, 0, 0, buttonAlpha }
 }
 
 local spawnObjectParams = {
@@ -106,6 +172,7 @@ function spawnClickcubeBlock(params)
   spawnObjectParams.position = params.position
 
   local block = spawnObject(spawnObjectParams)
+  block.setColorTint(params.tint)
 
   block.setLock(true)
 
@@ -123,13 +190,41 @@ function spawnClickcubeBlock(params)
   return block
 end
 
-function buttonClick(block)
+function colorNameToHex(color_name)
+  local color = stringColorToRGB(color_name)
+  return string.format('%x%x%x', color.r * 255, color.g * 255, color.b * 255)
+end
+
+function displayScores()
+  local notes = ''
+  for steam_id, playerData in pairs(knownPlayers) do
+    local playerNotes = '[' .. colorNameToHex(playerData.color) .. ']'
+      .. playerData.name .. ': click(' .. playerData.clicks .. ') kill(' .. playerData.kills .. ')'
+      .. '[-]\n'
+    notes = notes .. playerNotes
+  end
+  setNotes(notes)
+end
+
+function onButtonClick(block, player_color)
+  if player_color == 'Grey' then return end
+  local player = Player[player_color]
+  resolveClick(player, block)
+end
+
+function resolveClick(player, block)
+  local playerData = knownPlayers[player.steam_id]
+
+  playerData.clicks = playerData.clicks + 1
+  displayScores()
+
   local clickCount = (block.getVar('clickCount') or 0) + 1
   local blockHealth = block.getVar('health')
 
   if clickCount < blockHealth then
     pulseBlock(block)
   elseif clickCount == blockHealth then
+    playerData.kills = playerData.kills + 1
     killBlock(block)
   end
 
