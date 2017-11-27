@@ -1,112 +1,138 @@
 function onLoad()
-    for x = -4, 4 do
-      for y = 0, 8 do
-        for z = -4, 4 do
-          local block = spawnObject({
-            type = 'BlockSquare',
-            position = { x, 1.5 + y, z },
-            callback = 'spawnCallback'
-          })
-          block.setLock(true)
-          block.setVar('health', 10)
-        end
+  local spawnClickcubeBlockParams = {
+    position = { x = 0, y = 0, z = 0 }
+  }
+  for x = -4, 4 do
+    for y = 0, 8 do
+      for z = -4, 4 do
+        spawnClickcubeBlockParams.position.x = x
+        spawnClickcubeBlockParams.position.y = 1.5 + y
+        spawnClickcubeBlockParams.position.z = z
+        spawnClickcubeBlock(spawnClickcubeBlockParams)
       end
     end
+  end
 end
 
-function spawnCallback(block)
-  block.createButton({
-    click_function = 'buttonClick',
-    function_owner = Global,
-    label = 'A',
-    position = { 0, 0.5, 0 },
-    rotation = { 0, 0, 0 },
-    scale = { 1, 1, 1 },
-    width = 500,
-    height = 500,
-    font_size = 400,
-    color = { 0, 1, 0, 0 },
-    font_color = { 0, 0, 0, 0 }
-  })
-  block.createButton({
-    click_function = 'buttonClick',
-    function_owner = Global,
-    label = 'B',
-    position = { 0, -0.5, 0 },
-    rotation = { 180, 0, 0 },
-    scale = { 1, 1, 1 },
-    width = 500,
-    height = 500,
-    font_size = 400,
-    color = { 0, 1, 0, 0 },
-    font_color = { 0, 0, 0, 0 }
-  })
+local buttonParamsA = {
+  click_function = 'buttonClick',
+  function_owner = Global,
+  label = 'A',
+  position = { 0, 0.5, 0 },
+  rotation = { 0, 0, 0 },
+  scale = { 1, 1, 1 },
+  width = 500,
+  height = 500,
+  font_size = 400,
+  color = { 0, 1, 0, 1 },
+  font_color = { 0, 0, 0, 1 }
+}
 
-  block.createButton({
-    click_function = 'buttonClick',
-    function_owner = Global,
-    label = 'C',
-    position = { 0.5, 0, 0 },
-    rotation = { 0, 0, 90 },
-    scale = { 1, 1, 1 },
-    width = 500,
-    height = 500,
-    font_size = 400,
-    color = { 0, 1, 0, 0 },
-    font_color = { 0, 0, 0, 0 }
-  })
-  block.createButton({
-    click_function = 'buttonClick',
-    function_owner = Global,
-    label = 'D',
-    position = { -0.5, 0 , 0 },
-    rotation = { 0, 0, -90 },
-    scale = { 1, 1, 1 },
-    width = 500,
-    height = 500,
-    font_size = 400,
-    color = { 0, 1, 0, 0 },
-    font_color = { 0, 0, 0, 0 }
-  })
+local buttonParamsB = {
+  click_function = 'buttonClick',
+  function_owner = Global,
+  label = 'B',
+  position = { 0, -0.5, 0 },
+  rotation = { 180, 0, 0 },
+  scale = { 1, 1, 1 },
+  width = 500,
+  height = 500,
+  font_size = 400,
+  color = { 0, 1, 0, 1 },
+  font_color = { 0, 0, 0, 1 }
+}
 
-  block.createButton({
-    click_function = 'buttonClick',
-    function_owner = Global,
-    label = 'E',
-    position = { 0, 0, 0.5 },
-    rotation = { -90, 0, 0 },
-    scale = { 1, 1, 1 },
-    width = 500,
-    height = 500,
-    font_size = 400,
-    color = { 0, 1, 0, 0 },
-    font_color = { 0, 0, 0, 0 }
-  })
-  block.createButton({
-    click_function = 'buttonClick',
-    function_owner = Global,
-    label = 'F',
-    position = { 0, 0, -0.5 },
-    rotation = { 90, 0, 0 },
-    scale = { 1, 1, 1 },
-    width = 500,
-    height = 500,
-    font_size = 400,
-    color = { 0, 1, 0, 0 },
-    font_color = { 0, 0, 0, 0 }
-  })
+local buttonParamsC = {
+  click_function = 'buttonClick',
+  function_owner = Global,
+  label = 'C',
+  position = { 0.5, 0, 0 },
+  rotation = { 0, 0, 90 },
+  scale = { 1, 1, 1 },
+  width = 500,
+  height = 500,
+  font_size = 400,
+  color = { 0, 1, 0, 1 },
+  font_color = { 0, 0, 0, 1 }
+}
+
+local buttonParamsD = {
+  click_function = 'buttonClick',
+  function_owner = Global,
+  label = 'D',
+  position = { -0.5, 0 , 0 },
+  rotation = { 0, 0, -90 },
+  scale = { 1, 1, 1 },
+  width = 500,
+  height = 500,
+  font_size = 400,
+  color = { 0, 1, 0, 1 },
+  font_color = { 0, 0, 0, 1 }
+}
+
+local buttonParamsE = {
+  click_function = 'buttonClick',
+  function_owner = Global,
+  label = 'E',
+  position = { 0, 0, 0.5 },
+  rotation = { -90, 0, 0 },
+  scale = { 1, 1, 1 },
+  width = 500,
+  height = 500,
+  font_size = 400,
+  color = { 0, 1, 0, 1 },
+  font_color = { 0, 0, 0, 1 }
+}
+
+local buttonParamsF = {
+  click_function = 'buttonClick',
+  function_owner = Global,
+  label = 'F',
+  position = { 0, 0, -0.5 },
+  rotation = { 90, 0, 0 },
+  scale = { 1, 1, 1 },
+  width = 500,
+  height = 500,
+  font_size = 400,
+  color = { 0, 1, 0, 1 },
+  font_color = { 0, 0, 0, 1 }
+}
+
+local spawnObjectParams = {
+  type = 'BlockSquare'
+}
+
+function spawnClickcubeBlock(params)
+  spawnObjectParams.position = params.position
+
+  local block = spawnObject(spawnObjectParams)
+
+  block.setLock(true)
+
+  block.setVar('health', 10)
+
+  block.createButton(buttonParamsA)
+  block.createButton(buttonParamsB)
+
+  block.createButton(buttonParamsC)
+  block.createButton(buttonParamsD)
+
+  block.createButton(buttonParamsE)
+  block.createButton(buttonParamsF)
+
+  return block
 end
 
 function buttonClick(block)
   local clickCount = (block.getVar('clickCount') or 0) + 1
   local blockHealth = block.getVar('health')
-  
+
   if clickCount < blockHealth then
-    flashBlock(block)
+    pulseBlock(block)
   elseif clickCount == blockHealth then
     killBlock(block)
   end
-  
+
   block.setVar('clickCount', clickCount)
 end
 
@@ -115,16 +141,22 @@ function wait(delay)
   while os.time() - start < delay do coroutine.yield(0) end
 end
 
-function flashBlock(block)
-  function flashBlockCoroutine()
-    block.setColorTint({ 0, 0, 0, 1 })
+local pulseBlockScales = {
+  { 1.1, 1.1, 1.1 },
+  { 0.9, 0.9, 0.9 },
+  { 1, 1, 1 }
+}
+
+function pulseBlock(block)
+  function pulseBlockCoroutine()
+    block.setScale(pulseBlockScales[1])
     wait(0.1)
-    block.setColorTint({ 1, 1, 1, 1 })
+    block.setScale(pulseBlockScales[2])
     wait(0.1)
-    block.setColorTint({ 1, 0, 0, 1 })
+    block.setScale(pulseBlockScales[3])
     return 1
   end
-  startLuaCoroutine(Global, 'flashBlockCoroutine')
+  startLuaCoroutine(Global, 'pulseBlockCoroutine')
 end
 
 function killBlock(block)
