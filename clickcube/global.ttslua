@@ -4,14 +4,14 @@
 local debug = false
 
 function onLoad()
-  clearTable()
+  --clearTable()
   trackCurrentPlayers()
-  spawnClickcube()
+  --spawnClickcube()
 
   Timer.create({
     identifier = tostring({}),
     function_name = 'respawnClickcube',
-    delay = 5,
+    delay = 10,
     repetitions = 0
   })
 end
