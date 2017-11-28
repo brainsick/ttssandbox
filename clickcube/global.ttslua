@@ -181,6 +181,7 @@ function spawnClickcubeBlock()
   if debug then print('spawnClickcubeBlock') end
   local block = spawnObject(spawnObjectParams)
   block.setName('clickBlock_' .. os.time())
+  block.tooltip = false
 
   return block
 end
