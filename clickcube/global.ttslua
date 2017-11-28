@@ -47,8 +47,7 @@ function playerAssistantTimer()
   for index, player in ipairs(Player.getPlayers()) do
     if player.color ~= 'Grey' then
       local playerData = knownPlayers[player.steam_id]
-      local playerLevel = calcPlayerLevel(playerData.experience)
-      for i = 1, playerLevelProperties[playerLevel].assistants do
+      for i = 1, playerLevelProperties[playerData.level].assistants do
         local livingBlock = livingClickBlocks[i]
         if livingBlock then
           resolveClick(player, livingBlock)
@@ -107,12 +106,6 @@ function trackPlayer(player)
   displayScores()
 end
 
-function calcPlayerLevel(experience)
-  if debug then print('calcPlayerLevel') end
-  local playerLevel = math.floor(experience / experiencePerLevel) + 1
-  return math.min(playerLevel, #playerLevelProperties)
-end
-
 function initNewPlayer(player)
   if debug then print('initNewPlayer') end
   return {
@@ -120,6 +113,7 @@ function initNewPlayer(player)
     name = player.steam_name,
     attacks = 0,
     kills = 0,
+    level = 1,
     experience = 0
   }
 end
@@ -329,13 +323,11 @@ function resolveClick(player, block)
   if debug then print('resolveClick') end
   local playerData = knownPlayers[player.steam_id]
 
-  local playerLevel = calcPlayerLevel(playerData.experience)
-
   playerData.attacks = playerData.attacks + 1
 
   local blockHealth = block.getVar('health')
 
-  blockHealth = blockHealth - playerLevelProperties[playerLevel].damage
+  blockHealth = blockHealth - playerLevelProperties[playerData.level].damage
 
   if blockHealth > 0 then
     pulseBlock(block)
@@ -345,6 +337,9 @@ function resolveClick(player, block)
 
       playerData.kills = playerData.kills + 1
       playerData.experience = playerData.experience + block.getVar('experience')
+
+      local playerLevel = math.floor(playerData.experience / experiencePerLevel) + 1
+      playerData.level = math.min(playerLevel, #playerLevelProperties)
 
       local blockLevel = block.getVar('level')
       if blockLevel == 5 then
@@ -372,11 +367,10 @@ function displayScores()
   if debug then print('displayScores') end
   local notes = ''
   for steam_id, playerData in pairs(knownPlayers) do
-    local playerLevel = calcPlayerLevel(playerData.experience)
     local playerNotes = '[' .. colorNameToHex(playerData.color) .. ']'
-      .. playerData.name .. ' - Level(' .. playerLevel .. ')\n'
+      .. playerData.name .. ' - Level(' .. playerData.level .. ')\n'
       .. 'experience(' .. playerData.experience .. ')' .. ' attacks(' .. playerData.attacks .. ') kills(' .. playerData.kills .. ')\n'
-      .. 'damage(' .. playerLevelProperties[playerLevel].damage .. ') assistants(' .. playerLevelProperties[playerLevel].assistants .. ')'
+      .. 'damage(' .. playerLevelProperties[playerData.level].damage .. ') assistants(' .. playerLevelProperties[playerData.level].assistants .. ')'
       .. '[-]\n'
     notes = notes .. playerNotes
   end
