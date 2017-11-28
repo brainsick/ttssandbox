@@ -3,10 +3,17 @@
 
 local debug = false
 
+local cubeSizeX = 9
+local cubeSizeY = 9
+local cubeSizeZ = 9
+
+local xOffset = -5
+local yOffset = 0.5
+local zOffset = -5
+
 function onLoad()
-  --clearTable()
   trackCurrentPlayers()
-  --spawnClickcube()
+  spawnClickcube()
 
   Timer.create({
     identifier = tostring({}),
@@ -17,22 +24,20 @@ function onLoad()
 end
 
 function respawnClickcube()
-  local blockCount = 0
-  for key, value in pairs(getAllObjects()) do
-    blockCount = blockCount + 1
+  if debug then print('respawnClickcube') end
+  local reset = true
+  for index, block in ipairs(getAllClickBlocks()) do
+    if not block.getVar('dying') then
+      reset = false
+    end
   end
-  if blockCount == 0 then
+  if reset then
     spawnClickcube()
   end
 end
 
-function clearTable()
-  for key, value in pairs(getAllObjects()) do
-    value.destruct()
-  end
-end
-
 function trackCurrentPlayers()
+  if debug then print('trackCurrentPlayers') end
   for index, player in ipairs(Player.getPlayers()) do
     if player.color ~= 'Grey' then
       trackPlayer(player)
@@ -41,6 +46,7 @@ function trackCurrentPlayers()
 end
 
 function onPlayerChangedColor(player_color)
+  if debug then print('onPlayerChangedColor') end
   if player_color == 'Grey' then return end
   local player = Player[player_color]
   trackPlayer(player)
@@ -48,6 +54,7 @@ end
 
 local knownPlayers = {}
 function trackPlayer(player)
+  if debug then print('trackPlayer') end
   local steam_id = player.steam_id
 
   local playerData = knownPlayers[steam_id]
@@ -86,11 +93,13 @@ local playerLevelProperties = {
 }
 
 function calcPlayerLevel(experience)
+  if debug then print('calcPlayerLevel') end
   local playerLevel = math.floor(experience / experiencePerLevel) + 1
   return math.min(playerLevel, #playerLevelProperties)
 end
 
 function initNewPlayer(player)
+  if debug then print('initNewPlayer') end
   return {
     color = player.color,
     name = player.steam_name,
@@ -101,32 +110,101 @@ function initNewPlayer(player)
 end
 
 function spawnClickcube()
-  local spawnClickcubeBlockParams = {
-    position = { x = 0, y = 0, z = 0 }
-  }
-  for x = -4, 4 do
-    for y = 0, 8 do
-      for z = -4, 4 do
-        spawnClickcubeBlockParams.position.x = x
-        spawnClickcubeBlockParams.position.y = 1.5 + y
-        spawnClickcubeBlockParams.position.z = z
+  if debug then print('spawnClickcube') end
 
-        local blockLevel = 0
-        if x == -4 or x == 4 or y == 0 or y == 8 or z == -4 or z == 4 then
+  local position = { x = 0, y = 0, z = 0 }
+
+  local allClickBlocks = getAllClickBlocks()
+  local clickBlocksIndex = 0
+
+  local blockLevel = 0
+  local block = nil
+
+  for x = 1, cubeSizeX do
+    for y = 1, cubeSizeY do
+      for z = 1, cubeSizeZ do
+        position.x = x + xOffset
+        position.y = y + yOffset
+        position.z = z + zOffset
+
+        if x == 1 or x == 9 or y == 1 or y == 9 or z == 1 or z == 9 then
           blockLevel = 1
-        elseif x == -3 or x == 3 or y == 1 or y == 7 or z == -3 or z == 3 then
+        elseif x == 2 or x == 8 or y == 2 or y == 8 or z == 2 or z == 8 then
           blockLevel = 2
-        elseif x == -2 or x == 2 or y == 2 or y == 6 or z == -2 or z == 2 then
+        elseif x == 3 or x == 7 or y == 3 or y == 7 or z == 3 or z == 7 then
           blockLevel = 3
-        elseif x == -1 or x == 1 or y == 3 or y == 5 or z == -1 or z == 1 then
+        elseif x == 4 or x == 6 or y == 4 or y == 6 or z == 4 or z == 6 then
           blockLevel = 4
         else
           blockLevel = 5
         end
-        spawnClickcubeBlock(spawnClickcubeBlockParams, blockLevel)
+
+        if clickBlocksIndex < #allClickBlocks then
+          clickBlocksIndex = clickBlocksIndex + 1
+          block = allClickBlocks[clickBlocksIndex]
+        else
+          block = spawnClickcubeBlock()
+        end
+
+        initializeBlock(block, position, blockLevel)
       end
     end
   end
+end
+
+function getAllClickBlocks()
+  if debug then print('getAllClickBlocks') end
+  local clickBlocks = {}
+  for index, object in ipairs(getAllObjects()) do
+    local objectName = object.getName()
+    if string.find(objectName, 'clickBlock_') then
+      table.insert(clickBlocks, object)
+    end
+  end
+  if debug then print('getAllClickBlocks #clickBlocks: ' .. tostring(#clickBlocks)) end
+  return clickBlocks
+end
+
+local spawnObjectParams = {
+  type = 'BlockSquare'
+}
+
+local blockLevelProperties = {
+  { health = 10, color = { 0.961, 0.961, 0.961, 1 } },
+  { health = 20, color = { 0.933, 0.933, 0.933, 1 } },
+  { health = 40, color = { 0.878, 0.878, 0.878, 1 } },
+  { health = 80, color = { 0.741, 0.741, 0.741, 1 } },
+  { health = 160, color = { 0.620, 0.620, 0.620, 1 } }
+}
+
+function spawnClickcubeBlock()
+  if debug then print('spawnClickcubeBlock') end
+  local block = spawnObject(spawnObjectParams)
+  block.setName('clickBlock_' .. os.time())
+
+  return block
+end
+
+function initializeBlock(block, position, blockLevel)
+  if debug then print('initializeBlock') end
+  block.setPosition(position)
+  block.setScale({ 1, 1, 1 })
+
+  block.setLock(true)
+
+  block.setVar('level', blockLevel)
+  block.setVar('health', blockLevelProperties[blockLevel].health)
+  block.setVar('experience', blockLevel)
+
+  block.setVar('dying', nil)
+
+  block.setColorTint(blockLevelProperties[blockLevel].color)
+
+  if not block.getButtons() then
+    addButtons(block)
+  end
+
+  return block
 end
 
 local buttonAlpha = debug and 1 or 0
@@ -214,67 +292,25 @@ local blockFaceFButtonParams = {
   font_color = { 0, 0, 0, buttonAlpha }
 }
 
-local spawnObjectParams = {
-  type = 'BlockSquare'
-}
-
-local blockLevelProperties = {
-  { health = 10, color = { 0.961, 0.961, 0.961, 1 } },
-  { health = 20, color = { 0.933, 0.933, 0.933, 1 } },
-  { health = 40, color = { 0.878, 0.878, 0.878, 1 } },
-  { health = 80, color = { 0.741, 0.741, 0.741, 1 } },
-  { health = 160, color = { 0.620, 0.620, 0.620, 1 } }
-}
-
-function spawnClickcubeBlock(params, blockLevel)
-  spawnObjectParams.position = params.position
-
-  local block = spawnObject(spawnObjectParams)
-
-  block.setLock(true)
-
-  block.setVar('level', blockLevel)
-  block.setVar('health', blockLevelProperties[blockLevel].health)
-  block.setVar('experience', blockLevel)
-
-  block.setColorTint(blockLevelProperties[blockLevel].color)
-
+function addButtons(block)
+  if debug then print('addButtons') end
   block.createButton(blockFaceAButtonParams)
   block.createButton(blockFaceBButtonParams)
   block.createButton(blockFaceCButtonParams)
   block.createButton(blockFaceDButtonParams)
   block.createButton(blockFaceEButtonParams)
   block.createButton(blockFaceFButtonParams)
-
-  return block
-end
-
-function colorNameToHex(color_name)
-  local color = stringColorToRGB(color_name)
-  return string.format('%x%x%x', color.r * 255, color.g * 255, color.b * 255)
-end
-
-function displayScores()
-  local notes = ''
-  for steam_id, playerData in pairs(knownPlayers) do
-    local playerLevel = calcPlayerLevel(playerData.experience)
-    local playerNotes = '[' .. colorNameToHex(playerData.color) .. ']'
-      .. playerData.name .. ' - Level(' .. playerLevel .. ')\n'
-      .. 'experience(' .. playerData.experience .. ')' .. ' attacks(' .. playerData.attacks .. ') kills(' .. playerData.kills .. ')\n'
-      .. 'damage(' .. playerLevelProperties[playerLevel].damage .. ')'
-      .. '[-]\n'
-    notes = notes .. playerNotes
-  end
-  setNotes(notes)
 end
 
 function onButtonClick(block, player_color)
+  if debug then print('onButtonClick') end
   if player_color == 'Grey' then return end
   local player = Player[player_color]
   resolveClick(player, block)
 end
 
 function resolveClick(player, block)
+  if debug then print('resolveClick') end
   local playerData = knownPlayers[player.steam_id]
 
   local playerLevel = calcPlayerLevel(playerData.experience)
@@ -310,7 +346,29 @@ function resolveClick(player, block)
   displayScores()
 end
 
+function colorNameToHex(color_name)
+  if debug then print('colorNameToHex') end
+  local color = stringColorToRGB(color_name)
+  return string.format('%x%x%x', color.r * 255, color.g * 255, color.b * 255)
+end
+
+function displayScores()
+  if debug then print('displayScores') end
+  local notes = ''
+  for steam_id, playerData in pairs(knownPlayers) do
+    local playerLevel = calcPlayerLevel(playerData.experience)
+    local playerNotes = '[' .. colorNameToHex(playerData.color) .. ']'
+      .. playerData.name .. ' - Level(' .. playerLevel .. ')\n'
+      .. 'experience(' .. playerData.experience .. ')' .. ' attacks(' .. playerData.attacks .. ') kills(' .. playerData.kills .. ')\n'
+      .. 'damage(' .. playerLevelProperties[playerLevel].damage .. ')'
+      .. '[-]\n'
+    notes = notes .. playerNotes
+  end
+  setNotes(notes)
+end
+
 function wait(delay)
+  if debug then print('wait') end
   local start = os.time()
   while os.time() - start < delay do coroutine.yield(0) end
 end
@@ -322,7 +380,9 @@ local pulseBlockScales = {
 }
 
 function pulseBlock(block)
+  if debug then print('pulseBlock') end
   function pulseBlockCoroutine()
+    if debug then print('pulseBlockCoroutine') end
     block.setScale(pulseBlockScales[1])
     wait(0.1)
     block.setScale(pulseBlockScales[2])
@@ -334,18 +394,20 @@ function pulseBlock(block)
 end
 
 function killBlock(block)
+  if debug then print('killBlock') end
   function killBlockCoroutine()
+    if debug then print('killBlockCoroutine') end
     local scale = block.getScale()
     block.setColorTint({ 1, 1, 0, 1 })
-    block.setScale({ scale.x * 0.9, scale.y * 0.9, scale.z * 0.9 })
-    wait(0.2)
-    block.setColorTint({ 0, 1, 1, 1 })
-    block.setScale({ scale.x * 0.8, scale.y * 0.8, scale.z * 0.8 })
-    wait(0.2)
-    block.setColorTint({ 1, 0, 1, 1 })
     block.setScale({ scale.x * 0.7, scale.y * 0.7, scale.z * 0.7 })
     wait(0.2)
-    block.destruct()
+    block.setColorTint({ 0, 1, 1, 1 })
+    block.setScale({ scale.x * 0.4, scale.y * 0.4, scale.z * 0.4 })
+    wait(0.2)
+    block.setColorTint({ 1, 0, 1, 1 })
+    block.setScale({ scale.x * 0.001, scale.y * 0.001, scale.z * 0.001 })
+    wait(0.2)
+    --block.destruct()
     return 1
   end
   startLuaCoroutine(Global, 'killBlockCoroutine')
