@@ -174,16 +174,45 @@ function getAllClickBlocks()
   return clickBlocks
 end
 
-local spawnObjectParams = {
-  type = 'BlockSquare'
+
+
+
+
+local colorNames = {
+  'White',   'Brown',   'Red',
+  'Orange',  'Yellow',  'Green',
+  'Teal',    'Blue',    'Purple',
+  'Pink',    'Grey',    'Black',
 }
 
+local mapColorNameRGB = {}
+local mapColorNameRGBShades = {}
+for index, colorName in ipairs(colorNames) do
+  local colorRGB = stringColorToRGB(colorName)
+  mapColorNameRGB[colorName] = { r = colorRGB.r, g = colorRGB.g, b = colorRGB.b }
+  mapColorNameRGBShades[colorName .. '1'] = { r = mapColorNameRGB[colorName].r * 1.00, g = mapColorNameRGB[colorName].g * 1.00, b = mapColorNameRGB[colorName].b * 1.00, 1 }
+  mapColorNameRGBShades[colorName .. '2'] = { r = mapColorNameRGB[colorName].r * 0.75, g = mapColorNameRGB[colorName].g * 0.75, b = mapColorNameRGB[colorName].b * 0.75, 1 }
+  mapColorNameRGBShades[colorName .. '3'] = { r = mapColorNameRGB[colorName].r * 0.50, g = mapColorNameRGB[colorName].g * 0.50, b = mapColorNameRGB[colorName].b * 0.50, 1 }
+  mapColorNameRGBShades[colorName .. '4'] = { r = mapColorNameRGB[colorName].r * 0.25, g = mapColorNameRGB[colorName].g * 0.25, b = mapColorNameRGB[colorName].b * 0.25, 1 }
+  mapColorNameRGBShades[colorName .. '5'] = { r = mapColorNameRGB[colorName].r * 0.00, g = mapColorNameRGB[colorName].g * 0.00, b = mapColorNameRGB[colorName].b * 0.00, 1 }
+end
+
+
+
+
+
+
+
 local blockLevelProperties = {
-  { health = 10, color = { 0.961, 0.961, 0.961, 1 } },
-  { health = 20, color = { 0.933, 0.933, 0.933, 1 } },
-  { health = 40, color = { 0.878, 0.878, 0.878, 1 } },
-  { health = 80, color = { 0.741, 0.741, 0.741, 1 } },
-  { health = 160, color = { 0.620, 0.620, 0.620, 1 } },
+  { health = 10,  color = mapColorNameRGBShades['Grey' .. '1'] },
+  { health = 20,  color = mapColorNameRGBShades['Grey' .. '2'] },
+  { health = 40,  color = mapColorNameRGBShades['Grey' .. '3'] },
+  { health = 80,  color = mapColorNameRGBShades['Grey' .. '4'] },
+  { health = 160, color = mapColorNameRGBShades['Grey' .. '5'] },
+}
+
+local spawnObjectParams = {
+  type = 'BlockSquare'
 }
 
 function spawnClickcubeBlock()
@@ -330,7 +359,7 @@ function resolveClick(player, block)
   blockHealth = blockHealth - playerLevelProperties[playerData.level].damage
 
   if blockHealth > 0 then
-    pulseBlock(block)
+    pulseBlock(block, player.color)
   elseif blockHealth <= 0 then
     if not block.getVar('dying') then
       block.setVar('dying', true)
@@ -348,7 +377,7 @@ function resolveClick(player, block)
         end
       end
 
-      hideBlock(block)
+      hideBlock(block, player.color)
     end
   end
 
@@ -389,7 +418,7 @@ local pulseBlockStates = {
   { scale = { 1.0, 1.0, 1.0 } },
 }
 
-function pulseBlock(block)
+function pulseBlock(block, colorName)
   if debug then print('pulseBlock') end
   function pulseBlockCoroutine()
     if debug then print('pulseBlockCoroutine') end
@@ -404,27 +433,31 @@ function pulseBlock(block)
 end
 
 local hideBlockStates = {
-  { scale = { 0.750, 0.750, 0.750 }, tint = { 1, 1, 0, 1 } },
-  { scale = { 0.500, 0.500, 0.500 }, tint = { 0, 1, 1, 1 } },
-  { scale = { 0.250, 0.250, 0.250 }, tint = { 1, 0, 1, 1 } },
-  { scale = { 0.001, 0.001, 0.001 }, tint = { 0, 0, 0, 1 } },
+  { scale = { 1.000, 1.000, 1.000 } },
+  { scale = { 0.750, 0.750, 0.750 } },
+  { scale = { 0.500, 0.500, 0.500 } },
+  { scale = { 0.250, 0.250, 0.250 } },
+  { scale = { 0.001, 0.001, 0.001 } },
 }
 
-function hideBlock(block)
+function hideBlock(block, colorName)
   if debug then print('hideBlock') end
   function hideBlockCoroutine()
     if debug then print('hideBlockCoroutine') end
     block.setScale(hideBlockStates[1].scale)
-    block.setColorTint(hideBlockStates[1].tint)
+    block.setColorTint(mapColorNameRGBShades[colorName .. '1'])
     wait(0.1)
     block.setScale(hideBlockStates[2].scale)
-    block.setColorTint(hideBlockStates[2].tint)
+    block.setColorTint(mapColorNameRGBShades[colorName .. '2'])
     wait(0.1)
     block.setScale(hideBlockStates[3].scale)
-    block.setColorTint(hideBlockStates[3].tint)
+    block.setColorTint(mapColorNameRGBShades[colorName .. '3'])
     wait(0.1)
     block.setScale(hideBlockStates[4].scale)
-    block.setColorTint(hideBlockStates[4].tint)
+    block.setColorTint(mapColorNameRGBShades[colorName .. '4'])
+    wait(0.1)
+    block.setScale(hideBlockStates[5].scale)
+    block.setColorTint(mapColorNameRGBShades[colorName .. '5'])
     return 1
   end
   startLuaCoroutine(Global, 'hideBlockCoroutine')
