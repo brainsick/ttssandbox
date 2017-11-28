@@ -353,7 +353,7 @@ function resolveClick(player, block)
         end
       end
 
-      killBlock(block)
+      hideBlock(block)
     end
   end
 
@@ -409,23 +409,29 @@ function pulseBlock(block)
   startLuaCoroutine(Global, 'pulseBlockCoroutine')
 end
 
-local killBlockStates = {
+local hideBlockStates = {
   { scale = { 0.750, 0.750, 0.750 }, tint = { 1, 1, 0, 1 } },
   { scale = { 0.500, 0.500, 0.500 }, tint = { 0, 1, 1, 1 } },
   { scale = { 0.250, 0.250, 0.250 }, tint = { 1, 0, 1, 1 } },
   { scale = { 0.001, 0.001, 0.001 }, tint = { 0, 0, 0, 1 } },
 }
 
-function killBlock(block)
-  if debug then print('killBlock') end
-  function killBlockCoroutine()
-    if debug then print('killBlockCoroutine') end
-    for index, state in ipairs(killBlockStates) do
-      block.setColorTint(killBlockStates[index].tint)
-      block.setScale(killBlockStates[index].scale)
-      wait(0.1)
-    end
+function hideBlock(block)
+  if debug then print('hideBlock') end
+  function hideBlockCoroutine()
+    if debug then print('hideBlockCoroutine') end
+    block.setScale(hideBlockStates[1].scale)
+    block.setColorTint(hideBlockStates[1].tint)
+    wait(0.1)
+    block.setScale(hideBlockStates[2].scale)
+    block.setColorTint(hideBlockStates[2].tint)
+    wait(0.1)
+    block.setScale(hideBlockStates[3].scale)
+    block.setColorTint(hideBlockStates[3].tint)
+    wait(0.1)
+    block.setScale(hideBlockStates[4].scale)
+    block.setColorTint(hideBlockStates[4].tint)
     return 1
   end
-  startLuaCoroutine(Global, 'killBlockCoroutine')
+  startLuaCoroutine(Global, 'hideBlockCoroutine')
 end
