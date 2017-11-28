@@ -11,27 +11,67 @@ local xOffset = -5
 local yOffset = 0.5
 local zOffset = -5
 
+local experiencePerLevel = 20
+local playerLevelProperties = {}
+local levelsPerAssistant = 20
+for x = 1, 100 do
+  table.insert(playerLevelProperties, {
+    damage = x,
+    assistants = math.floor(x / levelsPerAssistant)
+  })
+end
+
 function onLoad()
   trackCurrentPlayers()
   spawnClickcube()
 
   Timer.create({
     identifier = tostring({}),
-    function_name = 'respawnClickcube',
+    function_name = 'respawnClickcubeTimer',
     delay = 10,
+    repetitions = 0
+  })
+
+  Timer.create({
+    identifier = tostring({}),
+    function_name = 'playerAssistantTimer',
+    delay = 1,
     repetitions = 0
   })
 end
 
-function respawnClickcube()
-  if debug then print('respawnClickcube') end
-  local reset = true
-  for index, block in ipairs(getAllClickBlocks()) do
-    if not block.getVar('dying') then
-      reset = false
+local knownPlayers = {}
+function playerAssistantTimer()
+  if debug then print('playerAssistantTimer') end
+  local livingClickBlocks = getLivingClickBlocks()
+  for index, player in ipairs(Player.getPlayers()) do
+    if player.color ~= 'Grey' then
+      local playerData = knownPlayers[player.steam_id]
+      local playerLevel = calcPlayerLevel(playerData.experience)
+      for i = 1, playerLevelProperties[playerLevel].assistants do
+        local livingBlock = livingClickBlocks[i]
+        if livingBlock then
+          resolveClick(player, livingBlock)
+        end
+      end
     end
   end
-  if reset then
+end
+
+function getLivingClickBlocks()
+  local result = {}
+  for index, block in ipairs(getAllClickBlocks()) do
+    if not block.getVar('dying') then
+      table.insert(result, block)
+    end
+  end
+  return result
+end
+
+function respawnClickcubeTimer()
+  if debug then print('respawnClickcubeTimer') end
+  local livingClickBlocks = getLivingClickBlocks()
+  if #livingClickBlocks == 0 then
     spawnClickcube()
   end
 end
@@ -52,7 +92,6 @@ function onPlayerChangedColor(player_color)
   trackPlayer(player)
 end
 
-local knownPlayers = {}
 function trackPlayer(player)
   if debug then print('trackPlayer') end
   local steam_id = player.steam_id
@@ -66,12 +105,6 @@ function trackPlayer(player)
   end
 
   displayScores()
-end
-
-local experiencePerLevel = 20
-local playerLevelProperties = {}
-for x = 1, 100 do
-  table.insert(playerLevelProperties, { damage = x })
 end
 
 function calcPlayerLevel(experience)
@@ -343,7 +376,7 @@ function displayScores()
     local playerNotes = '[' .. colorNameToHex(playerData.color) .. ']'
       .. playerData.name .. ' - Level(' .. playerLevel .. ')\n'
       .. 'experience(' .. playerData.experience .. ')' .. ' attacks(' .. playerData.attacks .. ') kills(' .. playerData.kills .. ')\n'
-      .. 'damage(' .. playerLevelProperties[playerLevel].damage .. ')'
+      .. 'damage(' .. playerLevelProperties[playerLevel].damage .. ') assistants(' .. playerLevelProperties[playerLevel].assistants .. ')'
       .. '[-]\n'
     notes = notes .. playerNotes
   end
