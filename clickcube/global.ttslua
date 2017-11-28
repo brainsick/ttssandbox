@@ -22,6 +22,7 @@ for x = 1, 100 do
 end
 
 function onLoad()
+  if debug then print('onLoad') end
   trackCurrentPlayers()
   spawnClickcube()
 
@@ -40,37 +41,43 @@ function onLoad()
   })
 end
 
+local livingClickBlocks = {}
+function getLivingClickBlock(index)
+  if debug then print('getLivingClickBlock') end
+  local result = nil
+  local blockIndex = 0
+  for block, thing in pairs(livingClickBlocks) do
+    blockIndex = blockIndex + 1
+    if blockIndex == index then
+      result = block
+    end
+  end
+  return result
+end
+
 local knownPlayers = {}
 function playerAssistantTimer()
   if debug then print('playerAssistantTimer') end
-  local livingClickBlocks = getLivingClickBlocks()
   for index, player in ipairs(Player.getPlayers()) do
     if player.color ~= 'Grey' then
       local playerData = knownPlayers[player.steam_id]
       for i = 1, playerLevelProperties[playerData.level].assistants do
-        local livingBlock = livingClickBlocks[i]
-        if livingBlock then
-          resolveClick(player, livingBlock)
+        local livingClickBlock = getLivingClickBlock(i)
+        if livingClickBlock then
+          resolveClick(player, livingClickBlock)
         end
       end
     end
   end
 end
 
-function getLivingClickBlocks()
-  local result = {}
-  for index, block in ipairs(getAllClickBlocks()) do
-    if not block.getVar('dying') then
-      table.insert(result, block)
-    end
-  end
-  return result
-end
-
 function respawnClickcubeTimer()
   if debug then print('respawnClickcubeTimer') end
-  local livingClickBlocks = getLivingClickBlocks()
-  if #livingClickBlocks == 0 then
+  local respawn = true
+  for block, thing in pairs(livingClickBlocks) do
+    respawn = false
+  end
+  if respawn then
     spawnClickcube()
   end
 end
@@ -129,6 +136,8 @@ function spawnClickcube()
   local blockLevel = 0
   local block = nil
 
+  livingClickBlocks = {}
+
   for x = 1, cubeSizeX do
     for y = 1, cubeSizeY do
       for z = 1, cubeSizeZ do
@@ -156,6 +165,8 @@ function spawnClickcube()
         end
 
         initializeBlock(block, position, blockLevel)
+
+        livingClickBlocks[block] = {}
       end
     end
   end
@@ -234,8 +245,6 @@ function initializeBlock(block, position, blockLevel)
   block.setVar('level', blockLevel)
   block.setVar('health', blockLevelProperties[blockLevel].health)
   block.setVar('experience', blockLevel)
-
-  block.setVar('dying', nil)
 
   block.setColorTint(blockLevelProperties[blockLevel].color)
 
@@ -361,8 +370,8 @@ function resolveClick(player, block)
   if blockHealth > 0 then
     pulseBlock(block, player.color)
   elseif blockHealth <= 0 then
-    if not block.getVar('dying') then
-      block.setVar('dying', true)
+    if livingClickBlocks[block] then
+      livingClickBlocks[block] = nil
 
       playerData.kills = playerData.kills + 1
       playerData.experience = playerData.experience + block.getVar('experience')
@@ -372,7 +381,7 @@ function resolveClick(player, block)
 
       local blockLevel = block.getVar('level')
       if blockLevel == 5 then
-        for key, value in pairs(getAllObjects()) do
+        for key, value in pairs(getAllClickBlocks()) do
           value.setLock(false)
         end
       end
