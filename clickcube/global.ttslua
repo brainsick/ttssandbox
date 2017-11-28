@@ -69,28 +69,10 @@ function trackPlayer(player)
 end
 
 local experiencePerLevel = 20
-local playerLevelProperties = {
-  { damage = 1 },
-  { damage = 2 },
-  { damage = 3 },
-  { damage = 4 },
-  { damage = 5 },
-  { damage = 6 },
-  { damage = 7 },
-  { damage = 8 },
-  { damage = 9 },
-  { damage = 10 },
-  { damage = 11 },
-  { damage = 12 },
-  { damage = 13 },
-  { damage = 14 },
-  { damage = 15 },
-  { damage = 16 },
-  { damage = 17 },
-  { damage = 18 },
-  { damage = 19 },
-  { damage = 20 },
-}
+local playerLevelProperties = {}
+for x = 1, 100 do
+  table.insert(playerLevelProperties, { damage = x })
+end
 
 function calcPlayerLevel(experience)
   if debug then print('calcPlayerLevel') end
@@ -174,7 +156,7 @@ local blockLevelProperties = {
   { health = 20, color = { 0.933, 0.933, 0.933, 1 } },
   { health = 40, color = { 0.878, 0.878, 0.878, 1 } },
   { health = 80, color = { 0.741, 0.741, 0.741, 1 } },
-  { health = 160, color = { 0.620, 0.620, 0.620, 1 } }
+  { health = 160, color = { 0.620, 0.620, 0.620, 1 } },
 }
 
 function spawnClickcubeBlock()
