@@ -28,17 +28,17 @@ function onLoad()
 
   Timer.create({
     identifier = tostring({}),
-    function_name = 'respawnClickcubeTimer',
-    delay = 10,
-    repetitions = 0
-  })
-
-  Timer.create({
-    identifier = tostring({}),
-    function_name = 'playerAssistantTimer',
+    function_name = 'automationTimer',
     delay = 1,
     repetitions = 0
   })
+end
+
+function automationTimer()
+  if debug then print('automationTimer') end
+  respawnClickcubeTimer()
+  playerAssistantTimer()
+  displayScores()
 end
 
 local livingClickBlocks = {}
@@ -93,8 +93,6 @@ function trackPlayer(player)
   else
     playerData.color = player.color
   end
-
-  displayScores()
 end
 
 function initNewPlayer(player)
@@ -181,10 +179,12 @@ local colorNames = {
 }
 
 local mapColorNameRGB = {}
+local mapColorNameHex = {}
 local mapColorNameRGBShades = {}
 for index, colorName in ipairs(colorNames) do
   local colorRGB = stringColorToRGB(colorName)
   mapColorNameRGB[colorName] = { r = colorRGB.r, g = colorRGB.g, b = colorRGB.b }
+  mapColorNameHex[colorName] = string.format('%x%x%x', colorRGB.r * 255, colorRGB.g * 255, colorRGB.b * 255)
   mapColorNameRGBShades[colorName .. '1'] = { r = mapColorNameRGB[colorName].r * 1.00, g = mapColorNameRGB[colorName].g * 1.00, b = mapColorNameRGB[colorName].b * 1.00, 1 }
   mapColorNameRGBShades[colorName .. '2'] = { r = mapColorNameRGB[colorName].r * 0.75, g = mapColorNameRGB[colorName].g * 0.75, b = mapColorNameRGB[colorName].b * 0.75, 1 }
   mapColorNameRGBShades[colorName .. '3'] = { r = mapColorNameRGB[colorName].r * 0.50, g = mapColorNameRGB[colorName].g * 0.50, b = mapColorNameRGB[colorName].b * 0.50, 1 }
@@ -339,6 +339,7 @@ function onButtonClick(block, player_color)
   if player_color == 'Grey' then return end
   local player = Player[player_color]
   resolveClick(player, block)
+  displayScores()
 end
 
 function resolveClick(player, block)
@@ -375,21 +376,13 @@ function resolveClick(player, block)
   end
 
   block.setVar('health', blockHealth)
-
-  displayScores()
-end
-
-function colorNameToHex(color_name)
-  if debug then print('colorNameToHex') end
-  local color = stringColorToRGB(color_name)
-  return string.format('%x%x%x', color.r * 255, color.g * 255, color.b * 255)
 end
 
 function displayScores()
   if debug then print('displayScores') end
   local notes = ''
   for steam_id, playerData in pairs(knownPlayers) do
-    local playerNotes = '[' .. colorNameToHex(playerData.color) .. ']'
+    local playerNotes = '[' .. mapColorNameHex[playerData.color] .. ']'
       .. playerData.name .. ' - Level(' .. playerData.level .. ')\n'
       .. 'experience(' .. playerData.experience .. ')' .. ' attacks(' .. playerData.attacks .. ') kills(' .. playerData.kills .. ')\n'
       .. 'damage(' .. playerLevelProperties[playerData.level].damage .. ') assistants(' .. playerLevelProperties[playerData.level].assistants .. ')'
