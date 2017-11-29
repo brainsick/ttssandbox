@@ -38,7 +38,7 @@ function automationTimer()
   if debug then print('automationTimer') end
   respawnClickcubeTimer()
   playerAssistantTimer()
-  displayScores()
+  displayStatistics()
 end
 
 local livingClickBlocks = {}
@@ -339,7 +339,7 @@ function onButtonClick(block, player_color)
   if player_color == 'Grey' then return end
   local player = Player[player_color]
   resolveClick(player, block)
-  displayScores()
+  displayStatistics()
 end
 
 function resolveClick(player, block)
@@ -378,16 +378,21 @@ function resolveClick(player, block)
   block.setVar('health', blockHealth)
 end
 
-function displayScores()
-  if debug then print('displayScores') end
+function displayStatistics()
+  if debug then print('displayStatistics') end
   local notes = ''
   for steam_id, playerData in pairs(knownPlayers) do
-    local playerNotes = '[' .. mapColorNameHex[playerData.color] .. ']'
-      .. playerData.name .. ' - Level(' .. playerData.level .. ')\n'
-      .. 'experience(' .. playerData.experience .. ')' .. ' attacks(' .. playerData.attacks .. ') kills(' .. playerData.kills .. ')\n'
-      .. 'damage(' .. playerLevelProperties[playerData.level].damage .. ') assistants(' .. playerLevelProperties[playerData.level].assistants .. ')'
-      .. '[-]\n'
-    notes = notes .. playerNotes
+    notes = notes ..
+      string.format([[
+        [%s][u]%s[/u]
+        Level(%d) Experience(%d)
+        Attacks(%d) Kills(%d)
+        Damage(%d) Assistants(%d)[-]
+      ]], mapColorNameHex[playerData.color], playerData.name,
+        playerData.level, playerData.experience,
+        playerData.attacks, playerData.kills,
+        playerLevelProperties[playerData.level].damage, playerLevelProperties[playerData.level].assistants
+      )
   end
   setNotes(notes)
 end
