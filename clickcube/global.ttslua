@@ -42,27 +42,17 @@ function onLoad()
 end
 
 local livingClickBlocks = {}
-function getLivingClickBlock(index)
-  if debug then print('getLivingClickBlock') end
-  local blockIndex = 0
-  for block, thing in pairs(livingClickBlocks) do
-    blockIndex = blockIndex + 1
-    if blockIndex == index then
-      return block
-    end
-  end
-end
-
 local knownPlayers = {}
+
 function playerAssistantTimer()
   if debug then print('playerAssistantTimer') end
   for index, player in ipairs(Player.getPlayers()) do
     if player.color ~= 'Grey' then
       local playerData = knownPlayers[player.steam_id]
       for i = 1, playerLevelProperties[playerData.level].assistants do
-        local livingClickBlock = getLivingClickBlock(i)
-        if livingClickBlock then
-          resolveClick(player, livingClickBlock)
+        local block, thing = next(livingClickBlocks)
+        if block then
+          resolveClick(player, block)
         end
       end
     end
