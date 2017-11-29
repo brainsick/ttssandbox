@@ -9,7 +9,7 @@ end
 
 function rotate()
   if not self.resting then return end
-  rotateY(10)
+  self.setRotation(rotateY(self.getRotation(), 10))
 end
 
 -- https://stackoverflow.com/questions/14607640/rotating-a-vector-in-3d-space/14609567#14609567
@@ -17,14 +17,14 @@ end
 -- | cos $d    0   sin $d| |x|   | x cos $d + z sin $d|   |x'|
 -- |   0       1        0| |y| = |          y         | = |y'|
 -- |-sin $d    0   cos $d| |z|   |-x sin $d + z cos $d|   |z'|
-function rotateY(degrees)
-  local rotation = self.getRotation()
+function rotateY(vector, degrees)
+  local vectorX = vector.x
+  --local vectorY = vector.y
+  local vectorZ = vector.z
 
-  local targetRotation = {}
+  vector.x = vectorX * math.cos(degrees) + vectorZ * math.sin(degrees)
+  --vector.y = vectorY
+  vector.z = -1 * vectorX * math.sin(degrees) + vectorZ * math.cos(degrees)
 
-  targetRotation.x = rotation.x * math.cos(degrees) + rotation.z * math.sin(degrees)
-  targetRotation.y = rotation.y
-  targetRotation.z = -1 * rotation.x * math.sin(degrees) + rotation.z * math.cos(degrees)
-
-  self.setRotation(targetRotation)
+  return vector
 end
