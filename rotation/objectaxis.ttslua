@@ -1,31 +1,30 @@
 function onLoad()
-  self.setPosition({ math.random(-25, 25), 1.5, math.random(-15, 15) })
-  self.setRotation({ math.random(360) - 1, math.random(360) - 1, math.random(360) - 1 })
-
   Timer.create({
     identifier = tostring({}),
-    function_name = 'rotateY',
+    function_name = 'rotate',
     delay = 1,
     repetitions = 0
   })
 end
 
-function rotateObject()
-  local rotation = self.getRotation()
-
-  rotation.y = (rotation.y + 10) % 360
-
-  self.setRotation(rotation)
+function rotate()
+  if not self.resting then return end
+  rotateY(10)
 end
 
-function rotateY()
+-- https://stackoverflow.com/questions/14607640/rotating-a-vector-in-3d-space/14609567#14609567
+-- Rotation in 3D around the Y-axis
+-- | cos $d    0   sin $d| |x|   | x cos $d + z sin $d|   |x'|
+-- |   0       1        0| |y| = |          y         | = |y'|
+-- |-sin $d    0   cos $d| |z|   |-x sin $d + z cos $d|   |z'|
+function rotateY(degrees)
   local rotation = self.getRotation()
 
-  local degrees = 10
+  local targetRotation = {}
 
-  local targetX = math.cos(rotation.x) * degrees + math.sin(rotation.z) * degrees
-  local targetY = rotation.y
-  local targetZ = math.sin(rotation.x * -1) * degrees + math.cos(rotation.z) * degrees
+  targetRotation.x = rotation.x * math.cos(degrees) + rotation.z * math.sin(degrees)
+  targetRotation.y = rotation.y
+  targetRotation.z = -1 * rotation.x * math.sin(degrees) + rotation.z * math.cos(degrees)
 
-  self.setRotation({ targetX, targetY, targetZ })
+  self.setRotation(targetRotation)
 end
